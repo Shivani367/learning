@@ -1,14 +1,12 @@
-FROM eclipse-temurin:17-jdk-alpine  
-# ↑ Use Java 17 (same version you have installed)
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-WORKDIR /app                         
-# ↑ Create a folder called /app inside the container
-
-COPY target/learning-0.0.1-SNAPSHOT.jar app.jar  
-# ↑ Copy your JAR file into the container
-
-EXPOSE 8080                          
-# ↑ Open port 8080 for traffic
-
+# Stage 2: Run
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/learning-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
-# ↑ Run your app when the container starts
